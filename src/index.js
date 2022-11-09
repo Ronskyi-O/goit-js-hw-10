@@ -5,64 +5,59 @@ import { fetchCountries } from './js/components/fetchCountries';
 
 const DEBOUNCE_DELAY = 300;
 
-const input = document.querySelector("#search-box");
-const list = document.querySelector(".country-list");
-const div = document.querySelector(".country-info");
-
+let getEl = selector => document.querySelector(selector)
 let searchCountryName = '';
 
-input.addEventListener("input", Debounce(onInputChange, DEBOUNCE_DELAY));
+getEl('#search-box').addEventListener("input", Debounce(onInputChange, DEBOUNCE_DELAY));
 
 function onInputChange() {
-    searchCountryName = input.value.trim();
+    searchCountryName = getEl('#search-box').value.trim();
     if (searchCountryName === '') {
         clearAll();
         return;
     } else fetchCountries(searchCountryName).then(countryNames => {
         if (countryNames.length < 2) {
             createCountrieCard(countryNames);
-            Notiflix.Notify.success('Here your result');
         } else if (countryNames.length < 10 && countryNames.length > 1) {
             createCountrieList(countryNames);
-            Notiflix.Notify.success('Here your results');
         } else {
             clearAll();
-            Notiflix.Notify.info('Too many matches found. Please enter a more specific name.');
+            Notiflix.Notify.info('Too many matches found. Please enter a more specific name');
         };
     })
         .catch(() => {
         clearAll();
-        Notiflix.Notify.failure('Oops, there is no country with that name.');
+        Notiflix.Notify.failure('Oops, there is no country with that name');
     });
 };
 
 function createCountrieCard(country) {
     clearAll();
-    const c = country[0];
-    const readyCard = `<div class="country-card">
+    const { flags, name, capital, population, languages} = country[0];
+    const cardOfOneCountry = `<div class="country-card">
         <div class="country-card--header">
-            <img src="${c.flags.svg}" alt="Country flag" width="55", height="35">
-            <h2 class="country-card--name"> ${c.name.official}</h2>
+            <img src="${flags.svg}" alt="Country flag" width="55", height="35">
+            <h2 class="country-card--name"> ${name.official}</h2>
         </div>
-            <p class="country-card--field">Capital: <span class="country-value">${c.capital}</span></p>
-            <p class="country-card--field">Population: <span class="country-value">${c.population}</span></p>
-            <p class="country-card--field">Languages: <span class="country-value">${Object.values(c.languages).join(',')}</span></p>
+            <p class="country-card--field">Capital: <span class="country-value">${capital}</span></p>
+            <p class="country-card--field">Population: <span class="country-value">${population}</span></p>
+            <p class="country-card--field">Languages: <span class="country-value">${Object.values(languages).join(',')}</span></p>
     </div>`
-    div.innerHTML = readyCard;
+    getEl('.country-info').innerHTML = cardOfOneCountry;
 };
 
 function createCountrieList(country) {
     clearAll();
-    const readyList = country.map((c) => 
+    const listOfCountries = country.map(({flags, name}) => 
         `<li class="country-list--item">
-            <img src="${c.flags.svg}" alt="Country flag" width="40", height="30">
-            <span class="country-list--name">${c.name.official}</span>
+            <img src="${flags.svg}" alt="Country flag" width="40", height="30">
+            <span class="country-list--name">${name.official}</span>
         </li>`)
         .join("");
-    list.insertAdjacentHTML('beforeend', readyList);
+    getEl('.country-list').insertAdjacentHTML('beforeend', listOfCountries);
 };
 
 function clearAll() {
-    list.innerHTML = '';
-    div.innerHTML = '';
+    getEl('.country-list').innerHTML = '';
+    getEl('.country-info').innerHTML = '';
 };
